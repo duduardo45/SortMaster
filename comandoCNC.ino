@@ -9,7 +9,13 @@ long yMax = 1000 + 500 + 200 + 200;
 long posX = 0;
 long posY = 0;
 
+int velStd = 250;
+
+int vel = velStd;
+
 bool reiniciar = false;
+bool reiniciar2 = false;
+unsigned long para_reiniciar = 0;
 
 bool reiniciarX = false;
 unsigned long ultResetX = 0;
@@ -66,6 +72,14 @@ void andaPara( long x, long y) {
   return;
 }
 
+void troca_velocidade(int spd) {
+  stepperX.setMaxSpeed(spd);
+  stepperY1.setMaxSpeed(spd);
+  stepperY2.setMaxSpeed(spd);
+  vel = spd;
+  return;
+}
+
 void reinicia() {
   reiniciar = true;
   reiniciarX = true;
@@ -73,17 +87,28 @@ void reinicia() {
   return;
 }
 
+void fim_do_reinicia() {
+  reiniciar = false;
+  posX = 0;
+  posY = 0;
+  if (vel == velStd) {
+    troca_velocidade(50);
+    andaPara(50, 50); // PRECISA DAR TEMPO DISSO EXECUTAR ANTES DE REINICIAR DE NOVO
+    reiniciar2 = true;
+    para_reiniciar = millis();
+  } else if (vel == 50) troca_velocidade(velStd);
+}
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
 
-  stepperX.setMaxSpeed(250);
+  troca_velocidade(velStd);
+
   stepperX.setAcceleration(1000);
 
-  stepperY1.setMaxSpeed(250);
   stepperY1.setAcceleration(1000);
   
-  stepperY2.setMaxSpeed(250);
   stepperY2.setAcceleration(1000);
 
   botaoX.setPressHandler(paraX);
@@ -121,14 +146,15 @@ void loop() {
   
     if ((!reiniciarX) && (!reiniciarY)) {
       Serial.println("parou");
-      reiniciar = false;
-      posX = 0;
-      posY = 0;
-      // stepperX.setCurrentPosition(0);
-      // stepperY1.setCurrentPosition(0);
-      // stepperY2.setCurrentPosition(0);
+      fim_do_reinicia();
     }
+  }
 
+  if (reiniciar2) {
+    if (millis()-para_reiniciar > 1000) {
+      reinicia();
+      reiniciar2 = false;
+    }
   }
 
   if (Serial.available() > 0) {
