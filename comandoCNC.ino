@@ -4,6 +4,11 @@
 GFButton botaoX(24); // digitalRead(botaoX) 0 caso apertado; 1 caso aberto
 GFButton botaoY(22);
 
+long xMax = 500 + 700 + 200 +200 + 80;
+long yMax = 1000 + 500 + 200 + 200;
+long posX = 0;
+long posY = 0;
+
 bool reiniciar = false;
 
 bool reiniciarX = false;
@@ -46,8 +51,25 @@ void paraY() {
 }
 
 void andaPara( long x, long y) {
+  if ((posX + x) > xMax) {
+    x = xMax - posX;
+    posX = xMax;
+  } else posX += x;
+  if ((posY + y) > yMax) {
+    y = yMax - posY;
+    posY = yMax;
+  } else posY += y;
+  
   stepperX.move(x);
   stepY(y);
+  
+  return;
+}
+
+void reinicia() {
+  reiniciar = true;
+  reiniciarX = true;
+  reiniciarY = true;
   return;
 }
 
@@ -56,13 +78,13 @@ void setup() {
   Serial.begin(9600);
 
   stepperX.setMaxSpeed(250);
-  stepperX.setAcceleration(2000);
+  stepperX.setAcceleration(1000);
 
   stepperY1.setMaxSpeed(250);
-  stepperY1.setAcceleration(2000);
+  stepperY1.setAcceleration(1000);
   
   stepperY2.setMaxSpeed(250);
-  stepperY2.setAcceleration(2000);
+  stepperY2.setAcceleration(1000);
 
   botaoX.setPressHandler(paraX);
   botaoY.setPressHandler(paraY);
@@ -92,8 +114,7 @@ void loop() {
 
     if (reiniciarY) {
       if (millis()-ultResetY > 50){
-        stepperY1.move(-50);
-        stepperY2.move(-50);
+        stepY(-50);
         ultResetY = millis();
       }
     }
@@ -101,6 +122,8 @@ void loop() {
     if ((!reiniciarX) && (!reiniciarY)) {
       Serial.println("parou");
       reiniciar = false;
+      posX = 0;
+      posY = 0;
       // stepperX.setCurrentPosition(0);
       // stepperY1.setCurrentPosition(0);
       // stepperY2.setCurrentPosition(0);
@@ -114,14 +137,12 @@ void loop() {
 
     if (texto == "reinicia") {
       Serial.println(texto);
-      reiniciar = true;
-      reiniciarX = true;
-      reiniciarY = true;
+      reinicia();
       texto = "";
     }
     if (texto.startsWith("anda")) { // enviar: anda XXXX YYYY (aceitando negativos)
       Serial.println(texto);
-      texto = texto.substring(6);
+      texto = texto.substring(5);
       long x;
       long y;
       if (texto[0] == '-'){
