@@ -1,7 +1,8 @@
 #include <AccelStepper.h>
 #include <GFButton.h>
+#include <Servo.h>
 
-GFButton botaoX(24); // digitalRead(botaoX) 0 caso apertado; 1 caso aberto
+GFButton botaoX(32); // digitalRead(botaoX) 0 caso apertado; 1 caso aberto
 GFButton botaoY(22);
 
 long xMax = 500 + 700 + 200 +200 + 80;
@@ -9,7 +10,7 @@ long yMax = 1000 + 500 + 200 + 200;
 long posX = 0;
 long posY = 0;
 
-int velStd = 250;
+int velStd = 400;
 
 int vel = velStd;
 
@@ -35,6 +36,9 @@ int pinDIRy2 = 7;
 AccelStepper stepperX(AccelStepper::DRIVER, pinSTEPx, pinDIRx);
 AccelStepper stepperY1(AccelStepper::DRIVER, pinSTEPy1, pinDIRy1);
 AccelStepper stepperY2(AccelStepper::DRIVER, pinSTEPy2, pinDIRy2);
+
+Servo cabeca;
+int pinoServo = 38;
 
 void stepY(long d) {
   stepperY1.move(d);
@@ -87,13 +91,18 @@ void reinicia() {
   return;
 }
 
+void mexe_cabeca(int angulo){
+  cabeca.write(angulo);
+  return;
+}
+
 void fim_do_reinicia() {
   reiniciar = false;
   posX = 0;
   posY = 0;
   if (vel == velStd) {
     troca_velocidade(50);
-    andaPara(50, 50); // PRECISA DAR TEMPO DISSO EXECUTAR ANTES DE REINICIAR DE NOVO
+    andaPara(100, 100); // PRECISA DAR TEMPO DISSO EXECUTAR ANTES DE REINICIAR DE NOVO
     reiniciar2 = true;
     para_reiniciar = millis();
   } else if (vel == 50) troca_velocidade(velStd);
@@ -113,6 +122,11 @@ void setup() {
 
   botaoX.setPressHandler(paraX);
   botaoY.setPressHandler(paraY);
+
+  cabeca.attach(pinoServo);
+  cabeca.write(0);
+  delay(2000);
+  cabeca.write(180);
 }
 
 void loop() {
@@ -131,14 +145,14 @@ void loop() {
   if (reiniciar) {
 
     if (reiniciarX) {
-      if (millis()-ultResetX > 50){
+      if (millis()-ultResetX > 20){
         stepperX.move(-50);
         ultResetX = millis();
       }
     }
 
     if (reiniciarY) {
-      if (millis()-ultResetY > 50){
+      if (millis()-ultResetY > 20){
         stepY(-50);
         ultResetY = millis();
       }
@@ -151,7 +165,7 @@ void loop() {
   }
 
   if (reiniciar2) {
-    if (millis()-para_reiniciar > 1000) {
+    if (millis()-para_reiniciar > 4000) {
       reinicia();
       reiniciar2 = false;
     }
@@ -188,6 +202,11 @@ void loop() {
       }
       andaPara(x,y);
       texto = "";
+    }
+    else if(texto.startsWith("c ")){
+      int ang = texto.substring(3,6).toInt();
+      mexe_cabeca(ang);
+      texto = ""
     }
   }
 }
