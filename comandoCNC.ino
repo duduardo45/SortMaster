@@ -124,9 +124,6 @@ void setup() {
   botaoY.setPressHandler(paraY);
 
   cabeca.attach(pinoServo);
-  cabeca.write(0);
-  delay(2000);
-  cabeca.write(180);
 }
 
 void loop() {
@@ -206,7 +203,7 @@ void loop() {
     else if(texto.startsWith("c ")){
       int ang = texto.substring(3,6).toInt();
       mexe_cabeca(ang);
-      texto = ""
+      texto = "";
     }
   }
 }
