@@ -14,6 +14,8 @@ int velStd = 400;
 
 int vel = velStd;
 
+const int relayPin = 44; // Pino do relé conectado ao Arduino
+
 bool reiniciar = false;
 bool reiniciar2 = false;
 unsigned long para_reiniciar = 0;
@@ -60,6 +62,20 @@ void paraY() {
   return;
 }
 
+void moveCNC(long x, long y) {
+  if (x > xMax) {
+    x = xMax;
+  }
+  if (y > yMax) {
+    y = yMax;
+  }
+  long mx, my;
+  mx = x - posX;
+  my = y - posY;
+  andaPara(mx, my);
+  return;
+}
+
 void andaPara( long x, long y) {
   if ((posX + x) > xMax) {
     x = xMax - posX;
@@ -93,6 +109,7 @@ void reinicia() {
 
 void mexe_cabeca(int angulo){
   cabeca.write(angulo);
+  //Serial.print(angulo);
   return;
 }
 
@@ -124,6 +141,10 @@ void setup() {
   botaoY.setPressHandler(paraY);
 
   cabeca.attach(pinoServo);
+  cabeca.write(50);
+
+  pinMode(relayPin, OUTPUT);
+  digitalWrite(relayPin, HIGH);
 }
 
 void loop() {
@@ -137,6 +158,8 @@ void loop() {
   stepperX.run();
   stepperY1.run();
   stepperY2.run();
+
+  digitalWrite(relayPin, LOW);
 
   // Logica de reiniciar a CNC para a posição inicial
   if (reiniciar) {
@@ -197,13 +220,21 @@ void loop() {
       else {
         y = texto.substring(0,4).toInt();
       }
-      andaPara(x,y);
+      moveCNC(x,y);
       texto = "";
     }
     else if(texto.startsWith("c ")){
-      int ang = texto.substring(3,6).toInt();
+      if(texto[2] == '0'){ 
+      int ang = texto.substring(3,5).toInt();
       mexe_cabeca(ang);
       texto = "";
+      }
+      else{
+      int ang = texto.substring(2,5).toInt();
+      mexe_cabeca(ang);
+      Serial.println(texto);
+      texto = "";
+      }
     }
   }
 }
