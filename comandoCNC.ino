@@ -10,6 +10,18 @@ long yMax = 1000 + 500 + 200 + 200;
 long posX = 0;
 long posY = 0;
 
+bool dentro_de_caixa = false;
+bool bomba_ligada = false;
+
+typedef struct {
+  int n_caixa;
+  long x;
+  long y;
+} Caixa;
+
+int qtd_registros = 0;
+Caixa guardador[4];
+
 int velStd = 400;
 
 int vel = velStd;
@@ -41,6 +53,8 @@ AccelStepper stepperY2(AccelStepper::DRIVER, pinSTEPy2, pinDIRy2);
 
 Servo cabeca;
 int pinoServo = 38;
+int cima = 50;
+int baixo = 180;
 
 void stepY(long d) {
   stepperY1.move(d);
@@ -62,20 +76,6 @@ void paraY() {
   return;
 }
 
-void moveCNC(long x, long y) {
-  if (x > xMax) {
-    x = xMax;
-  }
-  if (y > yMax) {
-    y = yMax;
-  }
-  long mx, my;
-  mx = x - posX;
-  my = y - posY;
-  andaPara(mx, my);
-  return;
-}
-
 void andaPara( long x, long y) {
   if ((posX + x) > xMax) {
     x = xMax - posX;
@@ -92,12 +92,40 @@ void andaPara( long x, long y) {
   return;
 }
 
+void moveCNC(long x, long y) {
+  if (dentro_de_caixa) {
+    return;
+  }
+  if (x > xMax) {
+    x = xMax;
+  }
+  if (y > yMax) {
+    y = yMax;
+  }
+  long mx, my;
+  mx = x - posX;
+  my = y - posY;
+  andaPara(mx, my);
+  return;
+}
+
 void troca_velocidade(int spd) {
   stepperX.setMaxSpeed(spd);
   stepperY1.setMaxSpeed(spd);
   stepperY2.setMaxSpeed(spd);
   vel = spd;
   return;
+}
+
+void bomba() {
+  if (bomba_ligada){
+    digitalWrite(relayPin, HIGH);
+    bomba_ligada = false;
+  }
+  else {
+    digitalWrite(relayPin, LOW);
+    bomba_ligada = true;
+  }
 }
 
 void reinicia() {
@@ -124,6 +152,52 @@ void fim_do_reinicia() {
     para_reiniciar = millis();
   } else if (vel == 50) troca_velocidade(velStd);
 }
+
+void registra_caixa(int n, long x, long y) {
+  Caixa c = {n, x, y};
+  guardadores[qtd_registros] = c;
+  qtd_registros++;
+  return;
+}
+
+int acha_caixa(int n) { // retorna o indice no vetor, e -1 caso não ache
+  int n_da_caixa;
+  for (int i = 0; i < qtd_registros; i++) {
+    n_da_caixa = guardadores[i].n_caixa
+    if (n == n_da_caixa) return i;
+  }
+  return -1;
+}
+
+void entra_sai_caixa() { // mexe a cabeca da CNC adentro e afora das caixas usando o andaPara
+  if (dentro_de_caixa) {
+    andaPara(0, -300);
+    dentro_de_caixa = true;
+  }
+  else {
+    andaPara(0, 300);
+    dentro_de_caixa = true;
+  }
+  return;
+}
+
+void pega_e_guarda(Caixa c, long x, long y) {
+  // testa se a coordenada esbarra nas caixas
+  if (y > yMax-300) y = yMax-300;
+  moveCNC(x,y); // vai até o objeto
+  mexe_cabeca(baixo); // abaixa a cabeca
+  bomba(); // liga a bomba para pegar o objeto
+  mexe_cabeca(cima); // sobe a cabeca
+  moveCNC(c.x,c.y); // vai até a coordenada da caixa
+  entra_sai_caixa(); // entra na caixa
+  mexe_cabeca(baixo); // (opcional) desce a cabeca
+  bomba(); // desliga a bomba
+  mexe_cabeca(cima); // (condicional) sobe a cabeca
+  entra_sai_caixa(); // sai da caixa
+  return;
+}
+
+
 
 void setup() {
   // put your setup code here, to run once:
@@ -158,8 +232,6 @@ void loop() {
   stepperX.run();
   stepperY1.run();
   stepperY2.run();
-
-  digitalWrite(relayPin, LOW);
 
   // Logica de reiniciar a CNC para a posição inicial
   if (reiniciar) {
@@ -200,7 +272,7 @@ void loop() {
       reinicia();
       texto = "";
     }
-    if (texto.startsWith("anda")) { // enviar: anda XXXX YYYY (aceitando negativos)
+    else if (texto.startsWith("anda")) { // enviar: anda XXXX YYYY (aceitando negativos)
       Serial.println(texto);
       texto = texto.substring(5);
       long x;
@@ -235,6 +307,42 @@ void loop() {
       Serial.println(texto);
       texto = "";
       }
+    }
+    else if (texto.startsWith("bomba")) {
+      bomba();
+      Serial.println(texto);
+      texto = "";
+    }
+    else if (texto.startsWith("pega")) { // enviar: pega C XXXX YYYY (aceitando negativos)
+      Serial.println(texto);
+      texto = texto.substring(5);
+      int n_c = texto.substring(0,1).toInt();
+      n_c = acha_caixa(n_c);
+      if (n_c == -1) {
+        Serial.println("nao existe esta caixa!");
+        texto = "";
+        continue;
+      }
+      texto = texto.substring(1);
+      long x;
+      long y;
+      if (texto[0] == '-'){
+        x = texto.substring(0,5).toInt();
+        texto = texto.substring(1);
+      }
+      else { 
+        x = texto.substring(0,4).toInt();
+      }
+      texto = texto.substring(5);
+      if (texto[0] == '-') {
+        y = texto.substring(0,5).toInt();
+        texto = texto.substring(1);
+      }
+      else {
+        y = texto.substring(0,4).toInt();
+      }
+      pega_e_guarda(guardadores[n_c],x,y);
+      texto = "";
     }
   }
 }
