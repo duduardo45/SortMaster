@@ -57,7 +57,7 @@ AccelStepper stepperY1(AccelStepper::DRIVER, pinSTEPy1, pinDIRy1);
 AccelStepper stepperY2(AccelStepper::DRIVER, pinSTEPy2, pinDIRy2);
 
 Servo cabeca;
-int pinoServo = 38;
+int pinoServo = 11;
 int cima = 50;
 int baixo = 180;
 
