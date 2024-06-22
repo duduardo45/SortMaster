@@ -60,7 +60,7 @@ def on_slider_release(
 
 
 def setup_gui(root):
-    initial_nfeatures = 2000
+    initial_nfeatures = 5000
     initial_ratio_test_threshold = 0.7
 
     # Create frames
@@ -146,3 +146,19 @@ def setup_gui(root):
     global image_panel
     image_panel = ttk.Label(frame)
     image_panel.grid(row=5, column=0, columnspan=3)
+
+
+def main():
+    # Create the main window
+    root = tk.Tk()
+    root.title("Image Matching Debugger")
+
+    # Setup the GUI
+    setup_gui(root)
+
+    # Run the application
+    root.mainloop()
+
+
+if __name__ == "__main__":
+    main()

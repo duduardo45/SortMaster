@@ -1,10 +1,14 @@
 import os
+from typing import Any
 
 import cv2
 import numpy as np
+import opencv_utils as utils
 from shapely.geometry import Polygon
 
 output_filename = "output/processed_image.jpg"
+
+MIN_MATCH_COUNT = 10
 
 
 def register_exemplar(image_path, nfeatures):
@@ -15,19 +19,18 @@ def register_exemplar(image_path, nfeatures):
     return image, keypoints, descriptors
 
 
-def match_features(
-    exemplar_image,
-    exemplar_keypoints,
-    exemplar_descriptors,
-    scene_image_path,
-    nfeatures,
-    ratio_test_threshold,
-    output_filename,
-):
-    scene_image = cv2.imread(scene_image_path, cv2.IMREAD_GRAYSCALE)
+def detect_and_compute_keypoints(image_path, nfeatures) -> tuple:
+    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
     orb = cv2.ORB_create(nfeatures=nfeatures)
-    scene_keypoints, scene_descriptors = orb.detectAndCompute(scene_image, None)
+    keypoints, descriptors = orb.detectAndCompute(image, None)
+    return image, keypoints, descriptors
 
+
+def match_descriptors(
+    exemplar_descriptors: np.ndarray,
+    scene_descriptors: np.ndarray,
+    ratio_test_threshold: float,
+) -> list[Any]:
     bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=False)
     matches = bf.knnMatch(exemplar_descriptors, scene_descriptors, k=2)
 
@@ -35,11 +38,13 @@ def match_features(
     for m, n in matches:
         if m.distance < ratio_test_threshold * n.distance:
             good_matches.append(m)
+    return good_matches
 
-    found_matches = []
-    MIN_MATCH_COUNT = 10
+
+def compute_homography_polygons(
+    exemplar_keypoints, scene_keypoints, good_matches, exemplar_image
+) -> list[tuple[Polygon, np.ndarray]]:
     homography_polygons = []
-
     while len(good_matches) >= MIN_MATCH_COUNT:
         src_pts = np.float32(
             [exemplar_keypoints[m.queryIdx].pt for m in good_matches]
@@ -62,43 +67,37 @@ def match_features(
         good_matches = [
             m for m, mask_value in zip(good_matches, matchesMask) if mask_value == 0
         ]
+    return homography_polygons
 
-    # Group overlapping polygons
-    polygon_groups = []
-    for polygon, dst in homography_polygons:
-        added_to_group = False
-        for group in polygon_groups:
-            if any(polygon.intersects(p[0]) for p in group):
-                group.append((polygon, dst))
-                added_to_group = True
-                break
-        if not added_to_group:
-            polygon_groups.append([(polygon, dst)])
 
-    # Determine the largest polygon in each group
-    largest_polygons = []
-    for group in polygon_groups:
-        largest_polygon = max(group, key=lambda x: x[0].area)
-        largest_polygons.append(largest_polygon)
-
-    # Draw the polygons on the image
-    for group in polygon_groups:
-        for polygon, dst in group:
-            color = (
-                (0, 255, 0)
-                if polygon == max(group, key=lambda x: x[0].area)[0]
-                else (255, 255, 255)
-            )
-            scene_image = cv2.polylines(
-                scene_image, [np.int32(dst)], True, color, 3, cv2.LINE_AA
-            )
+def match_features(
+    exemplar_image,
+    exemplar_keypoints,
+    exemplar_descriptors: np.ndarray,
+    scene_image_path: str,
+    nfeatures: int,
+    ratio_test_threshold: float,
+    output_filename: str,
+) -> tuple[Any, list[tuple[Polygon, np.ndarray]]]:
+    scene_image, scene_keypoints, scene_descriptors = detect_and_compute_keypoints(
+        scene_image_path, nfeatures
+    )
+    good_matches = match_descriptors(
+        exemplar_descriptors, scene_descriptors, ratio_test_threshold
+    )
+    homography_polygons = compute_homography_polygons(
+        exemplar_keypoints, scene_keypoints, good_matches, exemplar_image
+    )
+    polygon_groups = utils.group_overlapping_polygons(homography_polygons)
+    largest_polygons = [max(group, key=lambda x: x[0].area) for group in polygon_groups]
+    scene_image = utils.draw_polygons_groups(scene_image, polygon_groups)
 
     result_image = cv2.drawMatches(
         exemplar_image,
         exemplar_keypoints,
         scene_image,
         scene_keypoints,
-        found_matches,
+        good_matches,
         None,
     )
 
@@ -106,18 +105,9 @@ def match_features(
     return result_image, largest_polygons
 
 
-def find_centroids(largest_polygons):
-    """Finds the centroids of the largest polygons."""
-    centroids = []
-    for polygon, _ in largest_polygons:
-        centroid = polygon.centroid
-        centroids.append((centroid.x, centroid.y))
-    return centroids
-
-
 def process_image_and_find_centroids(
     exemplar_image_path, scene_image_path, nfeatures, ratio_test_threshold
-):
+) -> list[tuple[float, float]]:
     exemplar_image, exemplar_keypoints, exemplar_descriptors = register_exemplar(
         exemplar_image_path, nfeatures
     )
@@ -132,10 +122,17 @@ def process_image_and_find_centroids(
         ratio_test_threshold,
         output_filename,
     )
-
     # Find centroids of the largest polygons
-    centroids = find_centroids(largest_polygons)
+    centroids = utils.find_centroids(largest_polygons)
 
+    return centroids
+
+
+if __name__ == "__main__":
+    scene_image_path = "white_rect_and_banknote.jpg"
+    centroids = process_image_and_find_centroids(
+        "50_Brazil_real_Second_Reverse.jpeg", scene_image_path, 12000, 0.7
+    )
     scene_image = cv2.imread(scene_image_path, cv2.IMREAD_COLOR)
 
     for centroid in centroids:
@@ -163,10 +160,3 @@ def process_image_and_find_centroids(
 
     # Print centroids
     print("Centroids of important polygons:", centroids)
-
-    return centroids
-
-
-process_image_and_find_centroids(
-    "50_Brazil_real_Second_Reverse.jpeg", "even_more_more_currency.jpg", 12000, 0.7
-)

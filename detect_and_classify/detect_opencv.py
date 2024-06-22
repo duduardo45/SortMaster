@@ -96,23 +96,3 @@ if __name__ == "__main__":
         exemplar_image, exemplar_keypoints, exemplar_descriptors, scene_image_path
     )
  """
-
-import tkinter as tk
-
-from debug_gui import setup_gui
-
-
-def main():
-    # Create the main window
-    root = tk.Tk()
-    root.title("Image Matching Debugger")
-
-    # Setup the GUI
-    setup_gui(root)
-
-    # Run the application
-    root.mainloop()
-
-
-if __name__ == "__main__":
-    main()

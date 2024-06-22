@@ -5,10 +5,11 @@ name = "pypi"
 
 [packages]
 opencv-python = "*"
-numpy = "*"
 openai = "*"
 pillow = "*"
 shapely = "*"
+numpy = "<2.0.0"
+pyserial = "*"
 
 [dev-packages]
 
