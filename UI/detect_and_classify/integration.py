@@ -1,16 +1,15 @@
 import time
 from collections import defaultdict
-
+import os
 import cv2
 from . import detect_category
-import opencv_feat_match as feat_match
-import opencv_simple_poly as simple_poly
+from . import opencv_feat_match as feat_match
+from . import opencv_simple_poly as simple_poly
 import serial
 
 DONE_MESSAGE = "reiniciado"
 SERIAL_PORT = "/dev/ttyACM0"  # Replace with your serial port
 BAUD_RATE = 9600
-
 
 def capture_image_from_webcam(output_path):
     cap = cv2.VideoCapture(2)
@@ -30,7 +29,6 @@ def capture_image_from_webcam(output_path):
     # Release the webcam
     cap.release()
     return frame
-
 
 def send_centroids_to_arduino(position_x, position_y, centroid):
     serial_port = SERIAL_PORT
@@ -57,7 +55,6 @@ def send_centroids_to_arduino(position_x, position_y, centroid):
             print("Expected message received. Closing serial connection.")
             break"""
 
-
 def process_image_objects(image_objects, captured_image_path):
     for obj in image_objects:
         print(f"Processing image for {obj['exemplar_image_path']}...")
@@ -76,7 +73,6 @@ def process_image_objects(image_objects, captured_image_path):
         print("No centroids found for this object")
     return False  # No centroids found
 
-
 def process_polygon_objects(poly_objects, captured_image_path):
     for (color, shape), obj_list in poly_objects.items():
         print(f"Processing image for {color} {shape}...")
@@ -84,7 +80,7 @@ def process_polygon_objects(poly_objects, captured_image_path):
             captured_image_path,
             color,
             shape,
-            "output/output_crop_{}.jpg",
+            os.path.join("detect_and_classify","output", "output_crop_{}.jpg"),
         )
         if centroids and file_paths:
             print(f"Centroids found: {centroids}")
@@ -92,7 +88,7 @@ def process_polygon_objects(poly_objects, captured_image_path):
                 obj_name = detect_category.detect(
                     file_path,
                     [
-                        detect_category.Category(obj["name"], obj["text_description"])
+                        detect_category.Category(obj["name"], obj["descricao"])
                         for obj in obj_list
                     ],
                 )
@@ -112,9 +108,8 @@ def process_polygon_objects(poly_objects, captured_image_path):
             print("No centroid found for this color and shape")
     return False  # No centroids found
 
-
 def take_photo_command_arduino(objects: list[dict]):
-    captured_image_path = "webcam/webcam_photo.jpg"
+    captured_image_path = os.path.join('detect_and_classify', 'test_images', 'dois_white_rects.jpg')
 
     image_objects = [obj for obj in objects if obj["mode"] == "image"]
     poly_objects = defaultdict(list)
@@ -124,10 +119,10 @@ def take_photo_command_arduino(objects: list[dict]):
             poly_objects[(obj["color"], obj["polygon"])].append(obj)
 
     while True:
-        capture_image_from_webcam(captured_image_path)
+        #capture_image_from_webcam(captured_image_path)
 
         if process_image_objects(image_objects, captured_image_path):
-            continue  # Stop if centroids were found for image objects
+            break  # Stop if centroids were found for image objects
 
         if process_polygon_objects(poly_objects, captured_image_path):
             break  # Stop if centroids were found for polygon objects
@@ -135,21 +130,21 @@ def take_photo_command_arduino(objects: list[dict]):
         print("No centroids found, sorting ended.")
         break
 
+    print(objects)
     return
 
-
 if __name__ == "__main__":
-    capture_image_from_webcam("webcam/webcam_photo.jpg")
+    capture_image_from_webcam(os.path.join("webcam", "webcam_photo.jpg"))
     database_objects = [
         {
             "name": "Brazilian Real",
             "position_x": 1,
             "position_y": 1,
-            "exemplar_image_path": "exemplar_images/50_Brazil_real_Second_Reverse.jpeg",
+            "exemplar_image_path": os.path.join("exemplar_images", "50_Brazil_real_Second_Reverse.jpeg"),
             "nfeatures": 12000,
             "ratio_test_threshold": 0.7,
             "mode": "image",
-            "text_description": "Banknote",
+            "descricao": "Banknote",
         },
         {
             "name": "Cartão de fidelidade do Tabu Club",
@@ -158,7 +153,7 @@ if __name__ == "__main__":
             "mode": "polygon",
             "color": "white",
             "polygon": "rectangle",
-            "text_description": "Cartão de fidelidade do Tabu Club, uma casa de jogos de tabuleiro",
+            "descricao": "Cartão de fidelidade do Tabu Club, uma casa de jogos de tabuleiro",
         },
         {
             "name": "Cartão da HotZone",
@@ -167,7 +162,7 @@ if __name__ == "__main__":
             "mode": "polygon",
             "color": "white",
             "polygon": "rectangle",
-            "text_description": "Cartão usado na HotZone para brincar nos brinquedos",
+            "descricao": "Cartão usado na HotZone para brincar nos brinquedos",
         },
     ]
     # take_photo_command_arduino(database_objects)
