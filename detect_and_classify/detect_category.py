@@ -1,14 +1,15 @@
 import base64
 
+from decouple import config
 from openai import OpenAI
 
-client = OpenAI(api_key="")
+client = OpenAI(api_key=str(config("OPENAI_API_KEY")))
 
 SYSTEM_MESSAGE = """Você é um especialista na análise de objetos e deve dizer a qual categoria o objeto em questão pertence.
 As mensagens enviadas terão:
-    - Uma imagem, com um objeto destacado
+    - Uma imagem, com um objeto em destaque
     - Uma lista de categorias possíveis
-Você deve analisar a imagem e dizer a qual categoria o objeto destacado (com um retângulo) pertence, respondendo com o string correspondente ao "id" da categoria. Se não se encaixar em nenhuma, responda com o string Outros. Não escreva absolutamente nada além dessas coisas, nem mesmo aspas simples ou duplas."""
+Você deve analisar a imagem e dizer a qual categoria o objeto destacado pertence. Ele ocupa praticamente toda a extensão da imagem. Responda com o número correspondente ao "id" da categoria. Se não se encaixar em nenhuma, responda com o string Outros. Não escreva absolutamente nada além dessas coisas, nem mesmo aspas simples ou duplas."""
 
 
 def encode_image(image_path):
@@ -27,7 +28,7 @@ class Category:
         return str({"id": self.id})
 
 
-def detect_category(image_path, categories: list[Category]):
+def detect(image_path, categories: list[Category]) -> str | None:
     system_message = SYSTEM_MESSAGE
     user_message = "\n".join(map(str, categories))
     base64_image = encode_image(image_path)
@@ -49,15 +50,19 @@ def detect_category(image_path, categories: list[Category]):
             ),
         },
     ]
+    print(f"Sending user message: {user_message}")
     response = client.chat.completions.create(
         model="gpt-4o", messages=messages, temperature=0
     )
+    print(f"Received response: {response.choices[0].message.content}")
+    if response.choices[0].message.content == "Outros":
+        return None
     return response.choices[0].message.content
 
 
 if __name__ == "__main__":
     print(
-        detect_category(
+        detect(
             "boxed_images/exemplar_box_1.png",
             [
                 Category("Homem", "Um ser humano do sexo masculino"),

@@ -4,7 +4,7 @@ from tkinter import filedialog, messagebox, ttk
 from opencv_feat_match import match_features, register_exemplar
 from PIL import Image, ImageTk
 
-output_filename = "output/processed_image.jpg"
+output_filename = "output/debug_gui_processed_image.jpg"
 
 
 def update_image(panel, image, max_size=(800, 600)):

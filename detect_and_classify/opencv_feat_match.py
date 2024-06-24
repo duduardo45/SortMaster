@@ -6,7 +6,7 @@ import numpy as np
 import opencv_utils as utils
 from shapely.geometry import Polygon
 
-output_filename = "output/processed_image.jpg"
+output_filename = "output/feat_match_processed_image.jpg"
 
 MIN_MATCH_COUNT = 10
 

@@ -87,7 +87,6 @@ def find_and_draw_polygons_by_color(
 ) -> list[tuple[Polygon, np.ndarray]]:
     hsv_image = cv2.cvtColor(scene_image, cv2.COLOR_BGR2HSV)
     binary_mask = cv2.inRange(hsv_image, lower_color, upper_color)
-    mask_with_polygons = cv2.cvtColor(binary_mask, cv2.COLOR_GRAY2BGR)
 
     contours, _ = cv2.findContours(binary_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -107,9 +106,9 @@ def find_and_draw_polygons_by_color(
                 (x, y), radius = cv2.minEnclosingCircle(contour)
                 center = (int(x), int(y))
                 radius = int(radius)
-                cv2.circle(mask_with_polygons, center, radius, (255, 0, 0), 2)
+                cv2.circle(scene_image, center, radius, (255, 0, 0), 2)
             else:
-                cv2.polylines(mask_with_polygons, [approx], True, (255, 0, 0), 2)
+                cv2.polylines(scene_image, [approx], True, (255, 0, 0), 2)
 
     return polygons
 
@@ -147,9 +146,56 @@ def process_image_and_find_centroids(
     return centroids
 
 
+def crop_image_to_polygon(
+    image: np.ndarray, polygon: Polygon, margin: int = 20
+) -> np.ndarray:
+    min_x, min_y, max_x, max_y = polygon.bounds
+    min_x, min_y, max_x, max_y = map(int, [min_x, min_y, max_x, max_y])
+
+    # Add margin
+    min_x = max(min_x - margin, 0)
+    min_y = max(min_y - margin, 0)
+    max_x = min(max_x + margin, image.shape[1])
+    max_y = min(max_y + margin, image.shape[0])
+
+    cropped_image = image[min_y:max_y, min_x:max_x]
+    return cropped_image
+
+
+def crop_to_largest_polygons(
+    scene_image_path: str,
+    color: str,
+    shape: str,
+    output_crop_filename_template: str,
+) -> tuple[list[tuple[float, float]], list[str]] | tuple[None, None]:
+    lower_color, upper_color = color_mapping[color]
+    scene_image, largest_polygons = find_and_draw_largest_colored_polygons(
+        scene_image_path,
+        lower_color,
+        upper_color,
+        "output/simple_poly_processed_image_in_crop.jpg",
+        shape,
+    )
+
+    if largest_polygons:
+        centroids = utils.find_centroids(largest_polygons)
+        cropped_image_paths = []
+
+        for i, polygon in enumerate(largest_polygons):
+            cropped_image = crop_image_to_polygon(scene_image, polygon[0])
+            output_crop_filename = output_crop_filename_template.format(i)
+            cv2.imwrite(output_crop_filename, cropped_image)
+            cropped_image_paths.append(output_crop_filename)
+
+        return centroids, cropped_image_paths
+    else:
+        print("No polygons found.")
+        return None, None
+
+
 if __name__ == "__main__":
     image_path = "white_rect_and_banknote.jpg"
-    output_filename = "output/output_image.jpg"
+    output_filename = "output/simple_poly_processed_image.jpg"
     centroids = process_image_and_find_centroids(
         image_path,
         "white",
