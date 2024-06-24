@@ -31,8 +31,7 @@
         <form action="{{ url_for('form', box_id=box_id) }}" method="post" enctype="multipart/form-data">
             <input type="hidden" name="box_id" value="{{ box_id }}">
             
-            <label for="name">Nome do Objeto:</label>
-            <input type="text" id="name" name="name" value="{{ data['name'] if data else '' }}" required>
+            
             
             <label for="mode">Modo de Registro:</label>
             <select id="mode" name="mode" onchange="showFormFields()" required>
@@ -51,6 +50,9 @@
 
                 <label for="descricao">Descrição do Objeto:</label>
                 <input type="text" id="descricao" name="descricao" value="{{ data['descricao'] if data and data['mode'] == 'polygon' else '' }}">
+
+                <label for="name">Nome do Objeto:</label>
+                <input type="text" id="name" name="name" value="{{ data['name'] if data else '' }}" required>
             </div>
             
             <!-- Campos para Imagem -->
@@ -60,6 +62,9 @@
                 {% if data and data['mode'] == 'image' and data['image_url'] %}
                 <img src="{{ data['image_url'] }}" alt="Imagem do Objeto" style="width:100px;">
                 {% endif %}
+
+                <label for="name">Nome do Objeto:</label>
+                <input type="text" id="name" name="name" value="{{ data['name'] if data else '' }}" required>
 
                 <label for="nfeatures">Número de Features:</label>
                 <input type="number" id="nfeatures" name="nfeatures" value="{{ data['nfeatures'] if data and data['mode'] == 'image' else '' }}">

@@ -2,7 +2,7 @@ import os
 
 import cv2
 import numpy as np
-import opencv_utils as utils
+import detect_and_classify.opencv_utils as utils
 from shapely.geometry import Polygon
 
 # Red
