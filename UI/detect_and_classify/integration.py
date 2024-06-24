@@ -8,8 +8,21 @@ import opencv_simple_poly as simple_poly
 import serial
 
 DONE_MESSAGE = "reiniciado"
-SERIAL_PORT = "/dev/ttyACM0"  # Replace with your serial port
+SERIAL_PORT = "/dev/ttyACM1"  # Replace with your serial port
 BAUD_RATE = 9600
+
+print("Connecting to Arduino...")
+# Initialize serial communication
+ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
+time.sleep(2)  # Wait for the connection to initialize
+
+ser.write("anda 0100 0100\n".encode("utf-8"))
+
+time.sleep(5)
+
+ser.write("reinicia\n".encode("utf-8"))
+time.sleep(10)
+print("Sent to Arduino: reinicia")
 
 
 def capture_image_from_webcam(output_path):
@@ -33,12 +46,10 @@ def capture_image_from_webcam(output_path):
 
 
 def send_centroids_to_arduino(position_x, position_y, centroid):
-    serial_port = SERIAL_PORT
-    baud_rate = BAUD_RATE
     print(f"Sending to Arduino: {position_x} {position_y} {centroid}")
     time.sleep(3)  # Small delay to ensure the command is processed
     print("Arduino responded: Done")
-    """# Initialize serial communication
+    # Initialize serial communication
     ser = serial.Serial(serial_port, baud_rate, timeout=1)
     time.sleep(2)  # Wait for the connection to initialize
 
@@ -55,7 +66,18 @@ def send_centroids_to_arduino(position_x, position_y, centroid):
         print(f"Received from Arduino: {response}")
         if response == DONE_MESSAGE:
             print("Expected message received. Closing serial connection.")
-            break"""
+            break
+
+
+def test_walk(position_x, position_y):
+    coord_str = f"pega 1 {str(position_x).zfill(4)} {str(position_y).zfill(4)}\n"
+    ser.write(coord_str.encode("utf-8"))
+    print(f"Sent to Arduino: {coord_str.strip()}")
+
+    while True:
+        # Read a line from the serial port
+        response = ser.readline().decode("utf-8").strip()
+        print(f"Received from Arduino: {response}")
 
 
 def process_image_objects(image_objects, captured_image_path):
@@ -139,7 +161,6 @@ def take_photo_command_arduino(objects: list[dict]):
 
 
 if __name__ == "__main__":
-    capture_image_from_webcam("webcam/webcam_photo.jpg")
     database_objects = [
         {
             "name": "Brazilian Real",
@@ -171,3 +192,4 @@ if __name__ == "__main__":
         },
     ]
     # take_photo_command_arduino(database_objects)
+    test_walk(1000, 1000)
