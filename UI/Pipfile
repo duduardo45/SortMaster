@@ -1,0 +1,30 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+opencv-python = "*"
+openai = "*"
+pillow = "*"
+shapely = "*"
+numpy = "<2.0.0"
+pyserial = "*"
+python-decouple = "*"
+blinker = "==1.8.2"
+certifi = "==2024.6.2"
+click = "==8.1.7"
+colorama = "==0.4.6"
+dnspython = "==2.6.1"
+flask = "==3.0.3"
+flask-pymongo = "==2.3.0"
+itsdangerous = "==2.2.0"
+jinja2 = "==3.1.4"
+markupsafe = "==2.1.5"
+pymongo = "==4.7.3"
+werkzeug = "==3.0.3"
+
+[dev-packages]
+
+[requires]
+python_version = "3.11"

@@ -2,7 +2,7 @@ import time
 from collections import defaultdict
 
 import cv2
-import detect_category
+from . import detect_category
 import opencv_feat_match as feat_match
 import opencv_simple_poly as simple_poly
 import serial

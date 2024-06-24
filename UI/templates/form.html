@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário de Cadastro</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script>
+        function showFormFields() {
+            var mode = document.getElementById('mode').value;
+            var polygonFields = document.getElementById('polygon-fields');
+            var imageFields = document.getElementById('image-fields');
+            
+            if (mode === 'polygon') {
+                polygonFields.style.display = 'block';
+                imageFields.style.display = 'none';
+            } else if (mode === 'image') {
+                polygonFields.style.display = 'none';
+                imageFields.style.display = 'block';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            showFormFields();
+        });
+    </script>
+</head>
+<body>
+    <div class="form-container">
+        <h2 class="centralize">Cadastro de Objeto na Caixa {{ box_id }}</h2>
+        <form action="{{ url_for('form', box_id=box_id) }}" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="box_id" value="{{ box_id }}">
+            
+            <label for="name">Nome do Objeto:</label>
+            <input type="text" id="name" name="name" value="{{ data['name'] if data else '' }}" required>
+            
+            <label for="mode">Modo de Registro:</label>
+            <select id="mode" name="mode" onchange="showFormFields()" required>
+                <option value="" {% if not data %}selected{% endif %}>Selecione um modo</option>
+                <option value="polygon" {% if data and data['mode'] == 'polygon' %}selected{% endif %}>Polígono e Cor</option>
+                <option value="image" {% if data and data['mode'] == 'image' %}selected{% endif %}>Imagem de Referência</option>
+            </select>
+            
+            <!-- Campos para Polígono e Cor -->
+            <div id="polygon-fields" style="display:none;">
+                <label for="polygon">Polígono:</label>
+                <input type="text" id="polygon" name="polygon" value="{{ data['polygon'] if data and data['mode'] == 'polygon' else '' }}">
+                
+                <label for="color">Cor:</label>
+                <input type="text" id="color" name="color" value="{{ data['color'] if data and data['mode'] == 'polygon' else '' }}">
+
+                <label for="descricao">Descrição do Objeto:</label>
+                <input type="text" id="descricao" name="descricao" value="{{ data['descricao'] if data and data['mode'] == 'polygon' else '' }}">
+            </div>
+            
+            <!-- Campos para Imagem -->
+            <div id="image-fields" style="display:none;">
+                <label for="image">Imagem do Objeto:</label>
+                <input type="file" id="image" name="image">
+                {% if data and data['mode'] == 'image' and data['image_url'] %}
+                <img src="{{ data['image_url'] }}" alt="Imagem do Objeto" style="width:100px;">
+                {% endif %}
+
+                <label for="nfeatures">Número de Features:</label>
+                <input type="number" id="nfeatures" name="nfeatures" value="{{ data['nfeatures'] if data and data['mode'] == 'image' else '' }}">
+
+                <label for="ratio_test_threshold">Ratio Test Threshold:</label>
+                <input type="text" id="ratio_test_threshold" name="ratio_test_threshold" value="{{ data['ratio_test_threshold'] if data and data['mode'] == 'image' else '' }}">
+
+                <label for="descricao_imagem">Descrição do Objeto:</label>
+                <input type="text" id="descricao_imagem" name="descricao_imagem" value="{{ data['descricao'] if data and data['mode'] == 'image' else '' }}">
+            </div>
+
+            <!-- Campos para Posição X e Posição Y -->
+            <label for="positionX">Posição X:</label>
+            <input type="number" id="positionX" name="positionX" value="{{ data['position_x'] if data else '' }}" required>
+            
+            <label for="positionY">Posição Y:</label>
+            <input type="number" id="positionY" name="positionY" value="{{ data['position_y'] if data else '' }}" required>
+
+            <!-- Contêiner para centralizar o botão de submit -->
+            <div class="submit-container">
+                <button type="submit">Salvar</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

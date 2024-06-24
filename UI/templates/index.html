@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homepage</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="buttons">
+            <button onclick="startMachine()">Start</button>
+            <button onclick="window.location.href='{{ url_for('registro') }}'">Cadastrar Objeto</button>
+            <button onclick="window.location.href='{{ url_for('dados') }}'">Listar Objetos Cadastrados</button>
+        </div>
+    </div>
+    <script>
+        function startMachine() {
+            console.log('Botão Start foi clicado.'); // Log para depuração
+            fetch('{{ url_for("start") }}')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Máquina Iniciada!");
+                    console.log(data);
+                    alert("Máquina Iniciada! Veja o console para detalhes.");
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert('Erro ao iniciar a máquina: ' + error.message);
+                });
+        }
+    </script>
+</body>
+</html>

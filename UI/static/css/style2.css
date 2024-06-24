@@ -1,0 +1,110 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  font-family: Arial, sans-serif;
+  background-image: linear-gradient(to bottom right, #c2c4c1, #d9d8d3);
+}
+
+.container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form-container {
+  width: 50%;
+  padding: 20px;
+  background-color: white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  text-align: center;
+}
+
+h2 {
+  margin-bottom: 20px;
+  text-align: center; /* Centraliza o título */
+}
+
+label, input, button {
+  display: block;
+  width: 100%;
+  margin: 10px 0;
+}
+
+input {
+  width: calc(100% - 21px);
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+button {
+  padding: 10px;
+  font-size: 16px;
+  background-color: #708090;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.8s ease;
+}
+
+button:hover {
+  background-color: #696969;
+}
+
+.boxes-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center; /* Centraliza os botões */
+  gap: 10px; /* Adiciona espaçamento entre os botões */
+  flex-wrap: wrap;
+}
+
+.boxes-container button {
+  width: auto;
+  margin: 5px;
+  padding: 10px 20px; /* Adiciona padding aos botões */
+  background-color: #708090;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.8s ease;
+}
+
+.boxes-container button:hover {
+  background-color: #696969;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 1em;
+  text-align: left;
+}
+
+table thead tr {
+  background-color: #f2f2f2;
+  color: #333;
+  text-align: left;
+}
+
+table th, table td {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+}
+
+/* table tbody tr:nth-of-type(even) {
+  background-color: #f1f1f1;
+} */
+
+table tbody tr:hover {
+  background-color: #f1f1f1;
+}

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Caixas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style2.css') }}">
+    <script>
+        function generateBoxButtons(numBoxes) {
+            var boxesContainer = document.getElementById('boxesContainer');
+            boxesContainer.innerHTML = ''; // Limpa os botões anteriores
+
+            for (var i = 1; i <= numBoxes; i++) {
+                var button = document.createElement('button');
+                button.innerHTML = 'Caixa ' + i;
+                button.onclick = (function(i) {
+                    return function() {
+                        window.location.href = '{{ url_for("form", box_id=0) }}'.replace('0', i);
+                    };
+                })(i);
+                boxesContainer.appendChild(button);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            var numBoxes = {{ num_boxes | tojson }};
+            if (numBoxes > 0) {
+                generateBoxButtons(numBoxes);
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h2>Selecione o Número de Caixas</h2>
+            <form method="post">
+                <label for="numBoxes">Número de Caixas:</label>
+                <input type="number" id="numBoxes" name="numBoxes" min="1" value="{{ num_boxes }}" required>
+                <button type="submit">Salvar</button>
+            </form>
+            <div id="boxesContainer" class="boxes-container"></div>
+        </div>
+    </div>
+</body>
+</html>

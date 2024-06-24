@@ -1,0 +1,108 @@
+/* Define o estilo básico para o body e html */
+body, html {
+    margin: 0; /* Remove as margens padrão */
+    padding: 0; /* Remove os paddings padrão */
+    height: 100%; /* Define a altura para 100% */
+    width: 100%; /* Define a largura para 100% */
+    font-family: Arial, sans-serif; /* Define a fonte para Arial */
+    background: url('../images/cnc.png') no-repeat center center fixed; /* Define a imagem de fundo e sua posição */
+    background-size: cover; /* Ajusta o tamanho da imagem de fundo para cobrir toda a tela */
+    display: flex; /* Usa flexbox para o layout */
+    justify-content: center; /* Centraliza horizontalmente */
+    align-items: center; /* Centraliza verticalmente */
+}
+
+/* Define o estilo para o contêiner principal */
+.container {
+    position: relative; /* Define a posição relativa */
+    width: 100%; /* Define a largura para 100% */
+    height: 100%; /* Define a altura para 100% */
+}
+
+/* Define o estilo para o contêiner dos botões */
+.buttons {
+    position: absolute; /* Define a posição absoluta */
+    top: 10px; /* Define a distância do topo */
+    left: 10px; /* Define a distância da esquerda */
+    display: flex; /* Usa flexbox para layout dos botões */
+    flex-direction: column; /* Alinha os botões em coluna */
+}
+
+/* Define o estilo para os botões */
+button {
+    margin: 5px 0; /* Define margem vertical */
+    padding: 10px 20px; /* Define padding */
+    font-size: 16px; /* Define o tamanho da fonte */
+    background-color: #708090; /* Define a cor de fundo */
+    color: white; /* Define a cor do texto */
+    border: none; /* Remove a borda */
+    border-radius: 5px; /* Arredonda os cantos */
+    cursor: pointer; /* Define o cursor como ponteiro */
+    transition: background-color 0.8s ease; /* Adiciona transição suave para mudança de cor */
+}
+
+/* Define o estilo para o botão quando o mouse está sobre ele */
+button:hover {
+    background-color: #696969; /* Muda a cor de fundo ao passar o mouse */
+}
+
+.form-container {
+    width: 50%;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+}
+
+form label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+form input, form button {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+form select{
+    width: calc(100% + 2px);
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+form input[type="file"] {
+    border: none;
+}
+
+form button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.5s ease;
+}
+
+form button:hover {
+    background-color: #0056b3;
+}
+
+.submit-container {
+    display: flex;
+    justify-content: center;
+    width: calc(100%);
+}
+
+.centralize{
+    display: flex;
+    justify-content: center;
+}
+
+

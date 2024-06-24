@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dados Salvos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style2.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h2>Dados Salvos</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome do Objeto</th>
+                    <th>ID da Caixa</th>
+                    <th>Modo</th>
+                    <th>Polígono</th>
+                    <th>Cor</th>
+                    <th>Descrição</th>
+                    <th>Imagem</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in dados %}
+                <tr>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.box_id }}</td>
+                    <td>{{ item.mode }}</td>
+                    <td>{{ item.polygon if item.mode == 'polygon' else 'N/A' }}</td>
+                    <td>{{ item.color if item.mode == 'polygon' else 'N/A' }}</td>
+                    <td>{{ item.descricao if item.mode == 'polygon' else 'N/A' }}</td>
+                    <td>
+                        {% if item.mode == 'image' %}
+                        <img src="{{ item.image_url }}" alt="Imagem do Objeto" style="width:100px;">
+                        {% else %}
+                        N/A
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
