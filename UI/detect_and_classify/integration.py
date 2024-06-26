@@ -3,14 +3,13 @@ import time
 from collections import defaultdict
 
 import cv2
+import detect_category
+import opencv_feat_match as feat_match
+import opencv_simple_poly as simple_poly
 import serial
 
-from . import detect_category
-from . import opencv_feat_match as feat_match
-from . import opencv_simple_poly as simple_poly
-
 DONE_MESSAGE = "reiniciado"
-SERIAL_PORT = "/dev/ttyACM1"  # Replace with your serial port
+SERIAL_PORT = "/dev/ttyACM0"  # Replace with your serial port
 BAUD_RATE = 9600
 
 print("Connecting to Arduino...")

@@ -253,7 +253,7 @@ void pega_e_guarda(Caixa c, long x, long y)
     pega_delay = t;
     pega_fase_ativa = 3;
   }
-  else if ((pega_fase_ativa == 3) && (t - pega_delay >= 1000))
+  else if ((pega_fase_ativa == 3) && (t - pega_delay >= 3000))
   {
     mexe_cabeca(cima); // sobe a cabeca
     pega_delay = t;

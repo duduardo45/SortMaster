@@ -3,7 +3,7 @@ from typing import Any
 
 import cv2
 import numpy as np
-import detect_and_classify.opencv_utils as utils
+import opencv_utils as utils
 from shapely.geometry import Polygon
 
 output_filename = "output/feat_match_processed_image.jpg"
