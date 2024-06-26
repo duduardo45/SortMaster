@@ -1,6 +1,7 @@
 import os
 
 import certifi
+from decouple import config
 from detect_and_classify.integration import (
     take_photo_command_arduino,  # Substitua 'sua_funcao' pela função correta
 )
@@ -17,7 +18,7 @@ app = Flask(__name__)
 app.secret_key = "your_secret_key"  # Adicione uma chave secreta para a sessão
 
 # Configuração do MongoDB Atlas
-uri = "mongodb+srv://matheusnossar:matheusnossar@clusterprojeto.6d9cz7x.mongodb.net/"
+uri = str(config("MONGO_DB_URI"))
 cliente = MongoClient(uri, tlsCAFile=certifi.where())
 banco = cliente["projeto"]
 colecao = banco["objetos"]
