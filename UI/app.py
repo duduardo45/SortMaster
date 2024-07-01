@@ -15,7 +15,7 @@ from werkzeug.utils import secure_filename
 
 
 app = Flask(__name__)
-app.secret_key = "your_secret_key"  # Adicione uma chave secreta para a sessão
+app.secret_key = "your_secret_key"
 
 # Configuração do MongoDB Atlas
 uri = str(config("MONGO_DB_URI"))
@@ -64,6 +64,7 @@ def form(box_id):
         mode = request.form["mode"]
         position_x = int(request.form["positionX"])
         position_y = int(request.form["positionY"])
+        descricao = request.form["descricao"]
 
         document = {
             "name": name,
@@ -71,22 +72,19 @@ def form(box_id):
             "mode": mode,
             "position_x": position_x,
             "position_y": position_y,
+            "descricao": descricao,  # Campo único para descrição
         }
 
         if mode == "polygon":
             polygon = request.form["polygon"]
             color = request.form["color"]
-            descricao = request.form["descricao"]
             document["polygon"] = polygon
             document["color"] = color
-            document["descricao"] = descricao
         elif mode == "image":
             nfeatures = int(request.form["nfeatures"])
             ratio_test_threshold = float(request.form["ratio_test_threshold"])
-            descricao = request.form["descricao_imagem"]
             document["nfeatures"] = nfeatures
             document["ratio_test_threshold"] = ratio_test_threshold
-            document["descricao"] = descricao
 
             image = request.files["image"]
             if image and allowed_file(image.filename):
@@ -95,22 +93,18 @@ def form(box_id):
                 image_url = url_for("static", filename="uploads/" + filename)
                 document["image_url"] = image_url
 
-        # Substitui o item existente na caixa
-        colecao.update_one({"box_id": box_id}, {"$set": document}, upsert=True)
+        existing_data = colecao.find_one({"box_id": box_id})
+        if existing_data:
+            colecao.update_one({"box_id": box_id}, {"$set": document})
+        else:
+            colecao.insert_one(document)
 
         return redirect(url_for("index"))
 
-    # Recupera os dados existentes da caixa
     existing_data = colecao.find_one({"box_id": box_id})
-    if existing_data:
-        existing_data["position_x"] = int(existing_data["position_x"])
-        existing_data["position_y"] = int(existing_data["position_y"])
-        existing_data["box_id"] = int(existing_data["box_id"])
-    print(
-        f"Box ID: {box_id}, Existing Data: {existing_data}"
-    )  # Adicione esta linha para ajudar na depuração
-
     return render_template("form.html", box_id=box_id, data=existing_data)
+
+
 
 
 @app.route("/start", methods=["GET"])

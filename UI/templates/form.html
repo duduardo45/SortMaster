@@ -14,9 +14,24 @@
             if (mode === 'polygon') {
                 polygonFields.style.display = 'block';
                 imageFields.style.display = 'none';
+                document.getElementById('polygon').required = true;
+                document.getElementById('color').required = true;
+                document.getElementById('descricao').required = true;
+                document.getElementById('image').required = false;
+                document.getElementById('nfeatures').required = false;
+                document.getElementById('ratio_test_threshold').required = false;
             } else if (mode === 'image') {
                 polygonFields.style.display = 'none';
                 imageFields.style.display = 'block';
+                document.getElementById('polygon').required = false;
+                document.getElementById('color').required = false;
+                document.getElementById('descricao').required = true;
+                document.getElementById('image').required = true;
+                document.getElementById('nfeatures').required = true;
+                document.getElementById('ratio_test_threshold').required = true;
+            } else {
+                polygonFields.style.display = 'none';
+                imageFields.style.display = 'none';
             }
         }
 
@@ -30,9 +45,10 @@
         <h2 class="centralize">Cadastro de Objeto na Caixa {{ box_id }}</h2>
         <form action="{{ url_for('form', box_id=box_id) }}" method="post" enctype="multipart/form-data">
             <input type="hidden" name="box_id" value="{{ box_id }}">
-            
-            
-            
+
+            <label for="name">Nome do Objeto:</label>
+            <input type="text" id="name" name="name" value="{{ data['name'] if data else '' }}" required>
+
             <label for="mode">Modo de Registro:</label>
             <select id="mode" name="mode" onchange="showFormFields()" required>
                 <option value="" {% if not data %}selected{% endif %}>Selecione um modo</option>
@@ -47,12 +63,6 @@
                 
                 <label for="color">Cor:</label>
                 <input type="text" id="color" name="color" value="{{ data['color'] if data and data['mode'] == 'polygon' else '' }}">
-
-                <label for="descricao">Descrição do Objeto:</label>
-                <input type="text" id="descricao" name="descricao" value="{{ data['descricao'] if data and data['mode'] == 'polygon' else '' }}">
-
-                <label for="name">Nome do Objeto:</label>
-                <input type="text" id="name" name="name" value="{{ data['name'] if data else '' }}" required>
             </div>
             
             <!-- Campos para Imagem -->
@@ -63,18 +73,16 @@
                 <img src="{{ data['image_url'] }}" alt="Imagem do Objeto" style="width:100px;">
                 {% endif %}
 
-                <label for="name">Nome do Objeto:</label>
-                <input type="text" id="name" name="name" value="{{ data['name'] if data else '' }}" required>
-
                 <label for="nfeatures">Número de Features:</label>
                 <input type="number" id="nfeatures" name="nfeatures" value="{{ data['nfeatures'] if data and data['mode'] == 'image' else '' }}">
 
                 <label for="ratio_test_threshold">Ratio Test Threshold:</label>
                 <input type="text" id="ratio_test_threshold" name="ratio_test_threshold" value="{{ data['ratio_test_threshold'] if data and data['mode'] == 'image' else '' }}">
-
-                <label for="descricao_imagem">Descrição do Objeto:</label>
-                <input type="text" id="descricao_imagem" name="descricao_imagem" value="{{ data['descricao'] if data and data['mode'] == 'image' else '' }}">
             </div>
+
+            <!-- Campo único para Descrição -->
+            <label for="descricao">Descrição do Objeto:</label>
+            <input type="text" id="descricao" name="descricao" value="{{ data['descricao'] if data else '' }}" required>
 
             <!-- Campos para Posição X e Posição Y -->
             <label for="positionX">Posição X:</label>
