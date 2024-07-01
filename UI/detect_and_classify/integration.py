@@ -3,10 +3,11 @@ import time
 from collections import defaultdict
 
 import cv2
-import detect_category as detect_category
-import opencv_feat_match as feat_match
-import opencv_simple_poly as simple_poly
 import serial
+
+from . import detect_category
+from . import opencv_feat_match as feat_match
+from . import opencv_simple_poly as simple_poly
 
 DONE_MESSAGE = "pega terminado"
 SERIAL_PORT = "/dev/ttyACM0"  # Replace with your serial port
@@ -15,7 +16,7 @@ CAMERA_NUMBER = 0
 
 print("Connecting to Arduino...")
 # Initialize serial communication
-ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
+# ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
 time.sleep(2)  # Wait for the connection to initialize
 
 
@@ -49,10 +50,12 @@ def convert_pixel_centroid_to_arduino(centroid):
     return arduino_x - arduino_centroid_x, arduino_y - arduino_centroid_y
 
 
-def send_centroids_to_arduino(position_x, position_y, centroid):
+def send_centroids_to_arduino(box_number, centroid):
     arduino_x, arduino_y = convert_pixel_centroid_to_arduino(centroid)
 
-    coord_str = f"pega {1} {str(arduino_x).zfill(4)} {str(arduino_y).zfill(4)}\n"
+    coord_str = (
+        f"pega {box_number} {str(arduino_x).zfill(4)} {str(arduino_y).zfill(4)}\n"
+    )
     ser.write(coord_str.encode("utf-8"))
     print(f"Sent to Arduino: {coord_str.strip()}")
     time.sleep(0.1)  # Small delay to ensure the command is processed
@@ -66,7 +69,7 @@ def send_centroids_to_arduino(position_x, position_y, centroid):
             break
 
 
-def test_walk(position_x, position_y):
+""" def test_walk(position_x, position_y):
     coord_str = f"pega 1 {str(position_x).zfill(4)} {str(position_y).zfill(4)}"
     ser.write(coord_str.encode("utf-8"))
     print(f"Sent to Arduino: '{coord_str}'")
@@ -74,7 +77,7 @@ def test_walk(position_x, position_y):
     while True:
         # Read a line from the serial port
         response = ser.readline().decode("utf-8").strip()
-        print(f"Received from Arduino: {response}")
+        print(f"Received from Arduino: {response}") """
 
 
 def process_image_objects(image_objects, captured_image_path):
@@ -88,9 +91,7 @@ def process_image_objects(image_objects, captured_image_path):
         )
         if centroids:
             print(f"Centroids found: {centroids}")
-            send_centroids_to_arduino(
-                obj["position_x"], obj["position_y"], centroids[0]
-            )
+            send_centroids_to_arduino(obj["box_id"], centroids[0])
             return True  # Centroids found
         print("No centroids found for this object")
     return False  # No centroids found
@@ -122,8 +123,7 @@ def process_polygon_objects(poly_objects, captured_image_path):
                     (obj for obj in obj_list if obj["name"] == obj_name)
                 )
                 send_centroids_to_arduino(
-                    identified_obj["position_x"],
-                    identified_obj["position_y"],
+                    identified_obj["box_id"],
                     centroid,
                 )
                 return True  # Centroids found
@@ -142,15 +142,15 @@ def take_photo_command_arduino(objects: list[dict]):
         if obj["mode"] == "polygon":
             poly_objects[(obj["color"], obj["polygon"])].append(obj)
 
-    ser.write("anda 0100 0100\n".encode("utf-8"))
+    # ser.write("anda 0100 0100\n".encode("utf-8"))
     print("Sent to Arduino: anda 0100 0100")
     time.sleep(5)
 
     while True:
-        ser.write("reinicia\n".encode("utf-8"))
+        # ser.write("reinicia\n".encode("utf-8"))
         print("Sent to Arduino: reinicia")
         time.sleep(15)
-        capture_image_from_webcam(captured_image_path)
+        # capture_image_from_webcam(captured_image_path)
 
         if process_image_objects(image_objects, captured_image_path):
             continue  # Continue if centroids were found for image objects
@@ -163,6 +163,27 @@ def take_photo_command_arduino(objects: list[dict]):
 
     print(objects)
     return
+
+
+def send_register_box_to_arduino(box_number, position_x, position_y):
+    coord_str = f"registra_caixa {box_number} {str(position_x).zfill(4)} {str(position_y).zfill(4)}\n"
+    # ser.write(coord_str.encode("utf-8"))
+    print(f"Sent to Arduino: {coord_str.strip()}")
+    time.sleep(0.1)  # Small delay to ensure the command is processed
+
+    while True:
+        # Read a line from the serial port
+        # response = ser.readline().decode("utf-8").strip()
+        # print(f"Received from Arduino: {response}")
+        print("Stopping send_register_box_to_arduino.")
+        break
+
+
+def register_boxes(database_objects: list[dict]):
+    for obj in database_objects:
+        send_register_box_to_arduino(
+            obj["box_id"], obj["position_x"], obj["position_y"]
+        )
 
 
 if __name__ == "__main__":
@@ -199,5 +220,6 @@ if __name__ == "__main__":
             "descricao": "Cartão usado na HotZone para brincar nos brinquedos",
         },
     ]
+    register_boxes(database_objects)
     take_photo_command_arduino(database_objects)
     # test_walk(1300, 1000)
