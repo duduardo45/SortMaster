@@ -7,7 +7,7 @@ from shapely.geometry import Polygon
 
 from . import opencv_utils as utils
 
-output_filename = "output/feat_match_processed_image.jpg"
+OUTPUT_FILENAME = "output/feat_match_processed_image.jpg"
 
 MIN_MATCH_COUNT = 10
 
@@ -101,7 +101,7 @@ def match_features(
         good_matches,
         None,
     )
-
+    print("era pra salvar", output_filename)
     cv2.imwrite(output_filename, result_image)
     return result_image, largest_polygons
 
@@ -121,7 +121,7 @@ def process_image_and_find_centroids(
         scene_image_path,
         nfeatures,
         ratio_test_threshold,
-        output_filename,
+        OUTPUT_FILENAME,
     )
     # Find centroids of the largest polygons
     centroids = utils.find_centroids(largest_polygons)
@@ -151,13 +151,13 @@ if __name__ == "__main__":
         )
 
     # Save and display the result image
-    cv2.imwrite(output_filename, scene_image)
+    cv2.imwrite(OUTPUT_FILENAME, scene_image)
     if os.name == "nt":  # For Windows
-        os.startfile(output_filename)
+        os.startfile(OUTPUT_FILENAME)
     elif os.uname()[0] == "Darwin":  # For macOS
-        os.system(f'open "{output_filename}"')
+        os.system(f'open "{OUTPUT_FILENAME}"')
     else:  # For Linux and other Unix-like OS
-        os.system(f'xdg-open "{output_filename}"')
+        os.system(f'xdg-open "{OUTPUT_FILENAME}"')
 
     # Print centroids
     print("Centroids of important polygons:", centroids)

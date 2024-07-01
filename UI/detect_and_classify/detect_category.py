@@ -9,7 +9,7 @@ SYSTEM_MESSAGE = """Você é um especialista na análise de objetos e deve dizer
 As mensagens enviadas terão:
     - Uma imagem, com um objeto em destaque
     - Uma lista de categorias possíveis
-Você deve analisar a imagem e dizer a qual categoria o objeto destacado pertence. Ele ocupa praticamente toda a extensão da imagem. Responda com o número correspondente ao "id" da categoria. Se não se encaixar em nenhuma, responda com o string Outros. Não escreva absolutamente nada além dessas coisas, nem mesmo aspas simples ou duplas."""
+Você deve analisar a imagem e dizer a qual categoria o objeto destacado pertence. Ele ocupa praticamente toda a extensão da imagem. Responda com o string correspondente ao "id" da categoria. Se não se encaixar em nenhuma, responda com o string Outros. Não escreva absolutamente nada além dessas coisas, nem mesmo aspas simples ou duplas. Escreva exatamente o que está no campo "id" ou o string "Outros", nada diferente disso."""
 
 
 def encode_image(image_path):

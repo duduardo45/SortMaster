@@ -28,9 +28,17 @@ UPPER_YELLOW_HSV = np.array([30, 255, 255])
 LOWER_CYAN_HSV = np.array([85, 50, 50])
 UPPER_CYAN_HSV = np.array([95, 255, 255])
 
+# Purple
+LOWER_PURPLE_HSV = np.array([125, 50, 50])
+UPPER_PURPLE_HSV = np.array([155, 255, 255])
+
 # Magenta
 LOWER_MAGENTA_HSV = np.array([140, 50, 50])
 UPPER_MAGENTA_HSV = np.array([170, 255, 255])
+
+# Orange
+LOWER_ORANGE_HSV = np.array([10, 50, 50])
+UPPER_ORANGE_HSV = np.array([25, 255, 255])
 
 # White
 LOWER_WHITE_HSV = np.array([0, 0, 200])
@@ -53,6 +61,8 @@ color_mapping = {
     "white": (LOWER_WHITE_HSV, UPPER_WHITE_HSV),
     "black": (LOWER_BLACK_HSV, UPPER_BLACK_HSV),
     "banknote": (LOWER_BANKNOTE_HSV, UPPER_BANKNOTE_HSV),
+    "purple": (LOWER_PURPLE_HSV, UPPER_PURPLE_HSV),
+    "orange": (LOWER_ORANGE_HSV, UPPER_ORANGE_HSV),
 }
 
 ASPECT_RATIO_TOLERANCE = 50

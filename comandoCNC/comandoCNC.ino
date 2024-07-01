@@ -59,7 +59,7 @@ AccelStepper stepperY2(AccelStepper::DRIVER, pinSTEPy2, pinDIRy2);
 
 Servo cabeca;
 int pinoServo = 11;
-int cima = 50;
+int cima = 0;
 int baixo = 180;
 
 const int relayPin = 44; // Pino do relé conectado ao Arduino
@@ -205,7 +205,7 @@ void reinicia_caixas()
 int acha_caixa(int n)
 { // retorna o indice no vetor, e -1 caso não ache
   int n_da_caixa;
-  for (int i = 0; i < qtd_registros; i++)
+  for (int i = 0; i < qtd_registros + 1; i++)
   {
     n_da_caixa = guardadores[i].n_caixa;
     if (n == n_da_caixa)
@@ -218,12 +218,12 @@ void entra_sai_caixa()
 { // mexe a cabeca da CNC adentro e afora das caixas usando o andaPara
   if (dentro_de_caixa)
   {
-    andaPara(0, -300);
+    andaPara(0, -600);
     dentro_de_caixa = false;
   }
   else
   {
-    andaPara(0, 300);
+    andaPara(0, 600);
     dentro_de_caixa = true;
   }
   return;
@@ -279,7 +279,7 @@ void pega_e_guarda(Caixa c, long x, long y)
     pega_fase_ativa = 7;
   }
   // mexe_cabeca(cima); // (condicional) sobe a cabeca
-  else if ((pega_fase_ativa == 7) && (t - pega_delay >= 1000))
+  else if ((pega_fase_ativa == 7) && (t - pega_delay >= 5000))
   {
     entra_sai_caixa(); // sai da caixa
     pega_delay = t;
@@ -311,12 +311,12 @@ void setup()
   botaoY.setPressHandler(paraY);
 
   cabeca.attach(pinoServo);
-  cabeca.write(50);
+  cabeca.write(cima);
 
   pinMode(relayPin, OUTPUT);
   digitalWrite(relayPin, HIGH);
 
-  registra_caixa(1, 1000, 1500);
+  // registra_caixa(1, 1000, 1500);
 }
 
 void loop()

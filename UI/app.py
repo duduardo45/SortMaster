@@ -90,7 +90,7 @@ def form(box_id):
             if image and allowed_file(image.filename):
                 filename = secure_filename(image.filename)
                 image.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-                image_url = url_for("static", filename="uploads/" + filename)
+                image_url = url_for("static", filename="uploads/" + filename)[1:]
                 document["image_url"] = image_url
 
         existing_data = colecao.find_one({"box_id": box_id})
@@ -103,8 +103,6 @@ def form(box_id):
 
     existing_data = colecao.find_one({"box_id": box_id})
     return render_template("form.html", box_id=box_id, data=existing_data)
-
-
 
 
 @app.route("/start", methods=["GET"])
