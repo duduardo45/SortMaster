@@ -54,7 +54,7 @@ color_mapping = {
     "banknote": (LOWER_BANKNOTE_HSV, UPPER_BANKNOTE_HSV),
 }
 
-ASPECT_RATIO_TOLERANCE = 10
+ASPECT_RATIO_TOLERANCE = 50
 
 DEFAULT_EPSILON_FACTOR = 0.02
 
@@ -194,7 +194,7 @@ def crop_to_largest_polygons(
 
 
 if __name__ == "__main__":
-    image_path = "white_rect_and_banknote.jpg"
+    image_path = "UI/detect_and_classify/test_images/smartphone_and_business_card.jpg"
     output_filename = "output/simple_poly_processed_image.jpg"
     centroids = process_image_and_find_centroids(
         image_path,
